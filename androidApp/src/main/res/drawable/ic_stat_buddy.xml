@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon: the Buddyverse blob silhouette with the eyes cut out (white on transparent, as Android needs). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="1024" android:viewportHeight="1024">
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd" android:pathData="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z M385 428 A35 35 0 0 1 420 463 L420 553 A35 35 0 0 1 350 553 L350 463 A35 35 0 0 1 385 428 Z M638 428 A35 35 0 0 1 673 463 L673 553 A35 35 0 0 1 603 553 L603 463 A35 35 0 0 1 638 428 Z" />
+</vector>

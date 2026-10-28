@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Buddyverse</title>
+<meta name="theme-color" content="#FAF8F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Buddyverse">
+<link rel="manifest" href="pwa.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #FAF8F5; overscroll-behavior: none; }
+  @media (prefers-color-scheme: dark) { html, body { background: #0F0E12; } }
+  #splash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #splash img { width: 96px; height: 96px; border-radius: 22px; animation: p 1.4s ease-in-out infinite; }
+  #splash p { position: absolute; bottom: 20%; font: 15px -apple-system, system-ui, sans-serif; color: #888; text-align: center; padding: 0 24px; }
+  @keyframes p { 50% { transform: scale(.92); opacity: .7; } }
+</style>
+<script>
+  // The gateway serves plugin files only with browser-asset suffixes, so the .wasm files ship as .wasm.json:
+  // compile from bytes, whatever the Content-Type says.
+  WebAssembly.instantiateStreaming = async (source, imports, options) =>
+    WebAssembly.instantiate(await (await source).arrayBuffer(), imports, options);
+  window.BUDDYVERSE_BUILD = '__BUILD__';
+  // updateViaCache 'none' + a check whenever the app comes back to the screen (a home-screen PWA is resumed, not
+  // reloaded): a new deploy's sw.js is found, installs, and reloads this page into the new build (sw.js).
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'buddyverse-reload' && e.data.build !== window.BUDDYVERSE_BUILD) location.reload();
+  });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg =>
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); })
+  ).catch(() => {});
+  window.addEventListener('error', e => { const p = document.querySelector('#splash p'); if (p) p.textContent = 'Could not start: ' + (e.message || e); });
+  window.addEventListener('unhandledrejection', e => { const p = document.querySelector('#splash p'); if (p) p.textContent = 'Could not start: ' + (e.reason && e.reason.message || e.reason) + ' (needs iOS 18.2+ / a current browser)'; });
+</script>
+</head>
+<body>
+<div id="splash"><img src="icon-192.png" alt=""><p></p></div>
+<script src="buddyverse.js?v=__BUILD__"></script>
+</body>
+</html>

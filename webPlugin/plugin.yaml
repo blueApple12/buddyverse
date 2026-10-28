@@ -1,0 +1,4 @@
+name: buddyverse
+version: 1.0.0
+description: "Serves the Buddyverse web app (PWA, for iPhone) from this PC's own gateway: /dashboard-plugins/buddyverse/index.html. Static files only."
+author: Buddyverse

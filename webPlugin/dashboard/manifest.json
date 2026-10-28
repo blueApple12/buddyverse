@@ -1,0 +1,9 @@
+{
+  "name": "buddyverse",
+  "label": "Buddyverse web app",
+  "description": "The Buddyverse PWA (open /dashboard-plugins/buddyverse/index.html on the phone).",
+  "icon": "Smartphone",
+  "version": "1.0.0",
+  "tab": { "path": "/buddyverse", "hidden": true },
+  "entry": "dist/index.js"
+}

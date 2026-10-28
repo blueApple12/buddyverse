@@ -1,0 +1,13 @@
+.gradle/
+build/
+local.properties
+*.apk
+.kotlin/
+/tools/node_modules/
+# signing material and machine-local files stay out of the repo
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+keys/

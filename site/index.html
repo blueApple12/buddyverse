@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buddyverse: your own AI buddies, on your own PC</title>
+<meta name="description" content="Buddyverse runs Hermes Agent on your Windows PC and shows your AI bots as animated buddies, with an Android app and a web app for iPhone. Download and setup.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <strong class="brand"><img src="logo.svg" width="32" height="32" alt="">Buddyverse</strong>
+    <a class="src" href="https://github.com/blueApple12/buddyverse">Source on GitHub</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <p class="tag">Beta 0.1.0 · early beta</p>
+    <h1>Your own AI buddies, on your own PC</h1>
+    <p>Buddyverse is a Windows app, an Android app and a web app for iPhone. It runs
+      <a href="https://hermes-agent.nousresearch.com/docs">Hermes Agent</a> on your PC with your own AI model account,
+      and shows each of your bots as an animated buddy. Your phone connects only to your PC. There is no shared server.</p>
+    <p class="small">You need: a Windows 10/11 PC, an AI model account or API key. Optional: an Android phone or an iPhone (iOS 18.2+).</p>
+  </section>
+
+  <section class="cards" aria-label="Downloads">
+    <a class="card" href="https://github.com/blueApple12/buddyverse/releases/download/v0.1.0-beta/Buddyverse-Setup.exe">
+      <span class="tag">PC</span>
+      <h2>Download for Windows</h2>
+      <p>Buddyverse-Setup.exe · Windows 10/11 · no admin rights</p>
+    </a>
+    <a class="card" href="https://github.com/blueApple12/buddyverse/releases/download/v0.1.0-beta/Buddyverse.apk">
+      <span class="tag">Android</span>
+      <h2>Download for Android</h2>
+      <p>Buddyverse.apk · after the first install it updates itself from your PC</p>
+    </a>
+    <div class="card muted">
+      <span class="tag">iPhone / browser</span>
+      <h2>The link comes from your PC</h2>
+      <p>No download. After setup, the PC app shows a link to the web version your own PC serves. Open it in Safari, then Share → Add to Home Screen.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Setup in 4 steps</h2>
+    <ol class="steps">
+      <li><strong>Install.</strong> Run Buddyverse-Setup.exe. If Windows says "Windows protected your PC", click More info → Run anyway (the installer isn't code-signed yet).</li>
+      <li><strong>Choose your login.</strong> Open Buddyverse. Pick a username and password. Setup then installs Hermes Agent (its official installer), the phone link and an empty notes vault. If a step fails, press Retry.</li>
+      <li><strong>Connect your AI model.</strong> Choose a provider, paste an API key or sign in, and pick a model. Your keys stay on your PC.</li>
+      <li><strong>Connect your phone.</strong> Android: install the app, then scan the pairing QR code on your PC and sign in. iPhone: open the web link in Safari and add it to the Home Screen.</li>
+    </ol>
+    <p class="small">The phone link changes when your PC restarts: open "Phone" in the PC app and scan again. Nothing starts by itself when you sign in to Windows.</p>
+  </section>
+
+  <section>
+    <h2>Let an AI agent do it</h2>
+    <p>Use Claude Code, Codex, Gemini CLI or Hermes? Paste our
+      <a href="https://github.com/blueApple12/buddyverse/blob/main/docs/AI-SETUP-PROMPT.md">ready-made setup prompt</a>.
+      It asks before installing anything and never asks for your passwords or keys in the chat.</p>
+  </section>
+
+  <section>
+    <h2>Help and details</h2>
+    <ul class="links">
+      <li><a href="https://github.com/blueApple12/buddyverse#readme">README: full guide, using the app, troubleshooting</a></li>
+      <li><a href="https://github.com/blueApple12/buddyverse/blob/main/docs/AI-SETUP-PROMPT.md">AI setup prompt</a></li>
+      <li><a href="https://github.com/blueApple12/buddyverse/releases">All releases</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Privacy</h2>
+    <p>Everything runs on your PC: the agents, your notes, your login and your keys. Your phone connects only to your PC,
+      through a Cloudflare link your PC opens. This page has no cookies, no trackers, no analytics and no external fonts.</p>
+    <p class="small">Open source under the MIT license · Buddyverse contributors · Built on Hermes Agent by Nous Research (not affiliated).</p>
+  </section>
+</main>
+</body>
+</html>

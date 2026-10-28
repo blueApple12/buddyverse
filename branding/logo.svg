@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Buddyverse logo (vector master). Icons are generated from it: python tools/set-logo.py -->
+  <defs>
+    <linearGradient id="body" x1="190" y1="230" x2="860" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34EDEE"/>
+      <stop offset="0.42" stop-color="#3B7DF7"/>
+      <stop offset="0.74" stop-color="#5B3DF6"/>
+      <stop offset="1" stop-color="#9B4DF3"/>
+    </linearGradient>
+    <radialGradient id="pink" cx="880" cy="650" r="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7A6F2" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#F7A6F2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shine" cx="330" cy="300" r="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+    <filter id="eyeglow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <clipPath id="clip"><path d="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" rx="210" fill="#0A0A10"/>
+  <path d="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z" fill="url(#body)" opacity="0.9" filter="url(#glow)"/>
+  <path d="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z" fill="url(#body)"/>
+  <g clip-path="url(#clip)">
+    <rect width="1024" height="1024" fill="url(#pink)"/>
+    <rect width="1024" height="1024" fill="url(#shine)"/>
+  </g>
+  <path d="M385 428 A35 35 0 0 1 420 463 L420 553 A35 35 0 0 1 350 553 L350 463 A35 35 0 0 1 385 428 Z M638 428 A35 35 0 0 1 673 463 L673 553 A35 35 0 0 1 603 553 L603 463 A35 35 0 0 1 638 428 Z" fill="#FFFFFF" opacity="0.6" filter="url(#eyeglow)"/>
+  <path d="M385 428 A35 35 0 0 1 420 463 L420 553 A35 35 0 0 1 350 553 L350 463 A35 35 0 0 1 385 428 Z M638 428 A35 35 0 0 1 673 463 L673 553 A35 35 0 0 1 603 553 L603 463 A35 35 0 0 1 638 428 Z" fill="#FFFFFF"/>
+</svg>

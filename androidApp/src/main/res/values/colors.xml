@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app's ground (design Theme.kt), so the cold-start window matches the first frame. -->
+    <color name="ground">#FAF8F5</color>
+    <color name="icon_bg">#0A0A10</color>
+</resources>

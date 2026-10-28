@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Buddyverse launcher icon, foreground layer: the same shapes as branding/logo.svg (1024 grid, shown at 72dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:scaleX="0.0703125" android:scaleY="0.0703125" android:translateX="18" android:translateY="18">
+        <!-- glow -->
+        <path android:pathData="M0 0 H1024 V1024 H0 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="radial" android:centerX="512" android:centerY="520" android:gradientRadius="470">
+                    <item android:offset="0.62" android:color="#704C7DF7" />
+                    <item android:offset="1" android:color="#004C7DF7" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="190" android:startY="230" android:endX="860" android:endY="820">
+                    <item android:offset="0" android:color="#FF34EDEE" />
+                    <item android:offset="0.42" android:color="#FF3B7DF7" />
+                    <item android:offset="0.74" android:color="#FF5B3DF6" />
+                    <item android:offset="1" android:color="#FF9B4DF3" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="radial" android:centerX="880" android:centerY="650" android:gradientRadius="260">
+                    <item android:offset="0" android:color="#F2F7A6F2" />
+                    <item android:offset="1" android:color="#00F7A6F2" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M512 172 C690 172 806 228 850 378 C888 500 892 640 862 722 C824 804 690 834 512 834 C330 834 198 802 164 712 C130 622 140 470 190 360 C240 240 352 172 512 172 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="radial" android:centerX="330" android:centerY="300" android:gradientRadius="260">
+                    <item android:offset="0" android:color="#42FFFFFF" />
+                    <item android:offset="1" android:color="#00FFFFFF" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:fillColor="#FFFFFFFF" android:pathData="M385 428 A35 35 0 0 1 420 463 L420 553 A35 35 0 0 1 350 553 L350 463 A35 35 0 0 1 385 428 Z M638 428 A35 35 0 0 1 673 463 L673 553 A35 35 0 0 1 603 553 L603 463 A35 35 0 0 1 638 428 Z" />
+    </group>
+</vector>
