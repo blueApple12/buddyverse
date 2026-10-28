@@ -39,6 +39,7 @@ import app.buddyverse.core.AccountSetup
 import app.buddyverse.core.AppStore
 import app.buddyverse.core.AuthError
 import app.buddyverse.core.DashboardPassword
+import app.buddyverse.core.HermesCanary
 import app.buddyverse.core.SetupArgs
 import app.buddyverse.core.AppUpdate
 import app.buddyverse.core.InstallPaths
@@ -72,7 +73,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * First run on a clean PC: the user picks this PC's login, then it installs this PC's own Hermes Agent (the official
- * installer, non-interactive), cloudflared, the start script, an empty vault, the login (scrypt hash only, in Hermes'
+ * installer, non-interactive, pinned to the newest canary build: [HermesCanary]), cloudflared, the start script, an empty vault, the login (scrypt hash only, in Hermes'
  * `.env`) and the web app plugin, starts the PC side, shows the phone links and offers the model connection. Each step
  * skips what's already there, so Retry (or a second run) resumes. Nothing registers to run at sign-in; nothing comes
  * from anyone else's PC. Passwords stay in memory until the first sign-in and are never logged.
@@ -84,7 +85,8 @@ object Setup {
 
     /** True when this PC lacks a piece the app needs (a finished install has them all: no setup). */
     fun needed(): Boolean = with(p) {
-        !hermesExe.isFile || !startScript.isFile || !cloudflared.isFile || existingUser() == null || !webAppIndex.isFile || !brain.isDirectory
+        !hermesExe.isFile || !startScript.isFile || !cloudflared.isFile || existingUser() == null || !webAppIndex.isFile || !brain.isDirectory ||
+            HermesCanary.lacksWebapp(hermesHome)
     }
 
     enum class Step { Account, Hermes, Cloudflared, Files, Login, Plugin, Start, Phone, Model }
@@ -179,7 +181,17 @@ object Setup {
 
     /** One step; null = done, else the reason it failed. */
     private fun run(s: Step): String? = when (s) {
-        Step.Hermes -> if (p.hermesExe.isFile) null else installHermes()
+        Step.Hermes -> when {
+            !p.hermesExe.isFile -> installHermes()
+            // An existing Hermes is never changed by Setup (it may run other bots): it says how to update it.
+            HermesCanary.lacksWebapp(p.hermesHome) -> {
+                val b = runCatching { HermesCanary.fetchNewest() }.getOrNull()
+                "this PC's Hermes Agent is too old for Buddyverse: it has no Webapp (the beta needs a Hermes canary build " +
+                    "from 26 Oct 2026 or later). Update it in PowerShell: ${HermesCanary.updateCommand(b)} ; then run " +
+                    "hermes gateway restart and press Retry"
+            }
+            else -> null
+        }
         Step.Cloudflared -> if (skipPhone || p.cloudflared.isFile) null else {
             log("cloudflared-windows-amd64.exe ← github.com/cloudflare/cloudflared")
             download(CLOUDFLARED, p.cloudflared)
@@ -211,10 +223,14 @@ object Setup {
         val tmp = File.createTempFile("hermes-install", ".ps1")
         val out = File.createTempFile("hermes-install", ".log")
         try {
+            val canary = runCatching { HermesCanary.fetchNewest() }
+                .getOrElse { return "couldn't find the newest Hermes canary build (${it.message}); check the internet connection and press Retry" }
+            log("Hermes canary ${canary.tag} (${canary.commit.take(12)})")
             log("install.ps1 ← hermes-agent.nousresearch.com")
             download(HERMES_INSTALLER, tmp)
             val pb = ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", tmp.path,
-                "-NonInteractive", "-HermesHome", p.hermesHome.path, "-InstallDir", File(p.hermesHome, "hermes-agent").path)
+                "-NonInteractive", "-HermesHome", p.hermesHome.path, "-InstallDir", File(p.hermesHome, "hermes-agent").path,
+                "-Commit", canary.commit)
                 .redirectErrorStream(true).redirectOutput(out)
             p.childEnv(pb.environment())
             pb.environment()["HERMES_NONINTERACTIVE"] = "1"
@@ -225,6 +241,7 @@ object Setup {
             return when {
                 proc.exitValue() != 0 -> "the Hermes installer stopped (exit ${proc.exitValue()})"
                 !p.hermesExe.isFile -> "the Hermes installer finished but ${p.hermesExe} is missing"
+                HermesCanary.lacksWebapp(p.hermesHome) -> "the installed Hermes has no Webapp (expected canary ${canary.tag})"
                 else -> null
             }
         } finally { tmp.delete(); out.delete() }

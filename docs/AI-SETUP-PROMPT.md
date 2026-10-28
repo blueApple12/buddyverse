@@ -21,8 +21,12 @@ SAFETY RULES (follow all of them, always):
    - https://github.com/blueApple12/buddyverse/releases/download/v0.1.0-beta/Buddyverse-Setup.exe
    Buddyverse's own setup then downloads Hermes Agent (https://hermes-agent.nousresearch.com/install.ps1) and
    cloudflared (github.com/cloudflare/cloudflared releases). Nothing else unless I agree.
+   This beta installs Hermes' newest CANARY build (its daily preview: the official installer pinned to the newest
+   v...+canary tag of github.com/NousResearch/hermes-agent), because Hermes' stable release has no Webapp yet.
 6. Do not change, stop or delete an existing Hermes install, its profiles, its .env or its config, except through the
-   steps below. If Hermes is already installed, tell me; setup reuses it.
+   steps below. If Hermes is already installed, tell me; setup reuses it, but only a canary build from 26 Oct 2026 or
+   newer works (one with "$env:LOCALAPPDATA\hermes\hermes-agent\gateway\webapp_listener.py"). If it's older, setup
+   stops and prints the command that updates it; show me that command and let me decide.
 7. If a step fails, show me the short error and suggest the next step. Don't work around it silently.
 
 STEPS:
@@ -31,6 +35,7 @@ Step 1. Check the PC and tell me what you found.
 - Windows 10 or 11, 64-bit: [Environment]::OSVersion.Version; [Environment]::Is64BitOperatingSystem
 - Internet: Test-NetConnection github.com -Port 443 -InformationLevel Quiet
 - Hermes already installed?   Test-Path "$env:LOCALAPPDATA\hermes\bin\hermes.exe"
+- If so, does it have the Webapp?   Test-Path "$env:LOCALAPPDATA\hermes\hermes-agent\gateway\webapp_listener.py"
 - Buddyverse already installed?   Test-Path "$env:LOCALAPPDATA\Buddyverse\Buddyverse.exe"
 - Something already on the gateway port?   try { (Invoke-WebRequest http://127.0.0.1:9120/api/status -UseBasicParsing -TimeoutSec 5).StatusCode } catch { 'nothing' }
 

@@ -65,7 +65,12 @@ object PcSide {
         try {
             val p = ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", script.path, *(if (noTunnel) arrayOf("-NoTunnel") else emptyArray()))
                 .hostEnv().redirectErrorStream(true).redirectOutput(log).start()
-            if (!p.waitFor(5, TimeUnit.MINUTES)) { p.destroyForcibly(); return "the PC side took too long to start" }
+            if (!p.waitFor(5, TimeUnit.MINUTES)) {
+                p.destroyForcibly()
+                return if (app.buddyverse.core.HermesCanary.lacksWebapp(paths.hermesHome))
+                    "the PC side took too long to start: this PC's Hermes has no Webapp (Buddyverse's beta needs a Hermes canary build; see the README)"
+                else "the PC side took too long to start"
+            }
             val out = runCatching { log.readText() }.getOrDefault("")
             return if (p.exitValue() == 0 || gatewayUp()) null else out.lines().lastOrNull { it.isNotBlank() }?.take(200) ?: "exit ${p.exitValue()}"
         } finally { log.delete() }

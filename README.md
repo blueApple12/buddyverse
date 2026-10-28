@@ -5,7 +5,9 @@
 <p align="center">Your own AI buddies, on your own PC. Free and open source (MIT).</p>
 
 <p align="center"><b>Beta 0.1.0</b>: this is an early beta. Expect rough edges, and please report problems in
-<a href="https://github.com/blueApple12/buddyverse/issues">Issues</a>.</p>
+<a href="https://github.com/blueApple12/buddyverse/issues">Issues</a>.
+The beta installs Hermes Agent's <b>canary</b> build (its daily preview), because Hermes' stable release doesn't have the
+Webapp feature Buddyverse needs yet.</p>
 
 Buddyverse is a Windows PC app, an Android app and a web app (for iPhone or any browser) for your own AI agents.
 It runs [Hermes Agent](https://hermes-agent.nousresearch.com/docs) by Nous Research on your PC and shows each of your
@@ -62,7 +64,10 @@ done, so a retry (or opening the app again later) carries on where it stopped.
    Only a scrambled (scrypt-hashed) copy of the password is saved on the PC. Nobody can read it back, so remember it.
    (If this PC already has a Buddyverse login, it asks for that password instead.)
 2. **Wait while it installs** (a few minutes, depending on your internet). Without admin rights it installs:
-   - **Hermes Agent**, the AI engine, with its official installer (skipped if you already have it);
+   - **Hermes Agent**, the AI engine, with its official installer. The beta installs the newest Hermes **canary**
+     build (Hermes' daily preview, from 26 Oct 2026 on), because only canary builds have the Webapp that Buddyverse
+     signs in to. If you already have Hermes, Setup reuses it, but it must be a canary build from 26 Oct 2026 or
+     newer (see [FAQ](#faq-and-troubleshooting));
    - **cloudflared**, the program that opens the private link your phone uses;
    - an **empty brain**: a notes vault for your bots in `%USERPROFILE%\buddyverse\brain`;
    - **your login** (saved as a hash in Hermes' settings);
@@ -128,7 +133,8 @@ and you tap **Install** once.
 - **Android:** the app offers new versions by itself (they come through your PC). Or install the new APK over the old one.
 - **iPhone / web:** it updates itself the next time you open it.
 - **Hermes Agent** has its own updater: run `hermes update` in a terminal
-  ([details](https://hermes-agent.nousresearch.com/docs)).
+  ([details](https://hermes-agent.nousresearch.com/docs)). The beta's canary build stays where it is until a Hermes
+  stable release is newer than it; `hermes update` won't move it backwards.
 
 ## Uninstall
 
@@ -150,6 +156,13 @@ this repo's Releases page.
 **A setup step failed.**
 Read the short reason under the step (often: the internet dropped), fix it if you can, then press **Retry**. Setup
 carries on from that step. With the headless setup, the full log is in `%USERPROFILE%\buddyverse\setup.log`.
+
+**Setup says "this PC's Hermes Agent is too old for Buddyverse: it has no Webapp".**
+You already had Hermes Agent, and it's a stable release (or an older build) without the Webapp. Setup never changes an
+existing Hermes by itself. The message shows a PowerShell line that reruns Hermes' official installer pinned to the
+newest canary build; your bots, chats, keys and settings stay. Run it in a normal terminal, then run
+`hermes gateway restart` and press **Retry**. The same applies if the PC side "took too long to start" and mentions the
+Webapp.
 
 **Setup says "Hermes was already running, so it hasn't loaded your new login yet".**
 You already had Hermes Agent running before you installed Buddyverse. Setup never stops it by itself (it may be busy
