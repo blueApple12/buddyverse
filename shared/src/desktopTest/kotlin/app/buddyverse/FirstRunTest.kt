@@ -69,10 +69,11 @@ class FirstRunTest {
         assertEquals(java.io.File("D:\\t\\hermes\\bin\\hermes.exe"), o.hermesExe)
         assertEquals("http://127.0.0.1:9135", o.local)
         assertEquals(9120, InstallPaths.of("C:\\Users\\x", null, mapOf("BUDDYVERSE_PORT" to "80")).port) // out of range: default
-        val child = mutableMapOf("HERMES_HOME" to "C:\\elsewhere\\profiles\\bot", "HERMES_SESSION_ID" to "s1", "PATH" to "p")
+        val child = mutableMapOf("HERMES_HOME" to "C:\\elsewhere\\profiles\\bot", "HERMES_SESSION_ID" to "s1", "PATH" to "p", "PSModulePath" to "C:\\pwsh\\Modules")
         o.childEnv(child)
         assertEquals("D:\\t\\hermes", child["HERMES_HOME"])
         assertNull(child["HERMES_SESSION_ID"])
+        assertNull(child["PSModulePath"])
         assertEquals("9135", child["BUDDYVERSE_PORT"])
         assertEquals("p", child["PATH"])
     }

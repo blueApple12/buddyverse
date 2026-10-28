@@ -43,6 +43,9 @@ data class InstallPaths(val home: File, val localAppData: File, val rootOverride
     /** Env for every Hermes / start-script child: this install's home and port, nothing inherited from an agent. */
     fun childEnv(env: MutableMap<String, String>) {
         env.keys.removeAll { it.startsWith("HERMES_") }
+        // Started from PowerShell 7, the app inherits pwsh's PSModulePath; a Windows PowerShell 5.1 child (installer,
+        // start-hermes.ps1) then can't load its own modules (Get-FileHash "not recognized"). Each shell rebuilds it.
+        env.keys.removeAll { it.equals("PSModulePath", ignoreCase = true) }
         env["HERMES_HOME"] = hermesHome.path
         env["BUDDYVERSE_HERMES_HOME"] = hermesHome.path
         env["BUDDYVERSE_PORT"] = port.toString()
