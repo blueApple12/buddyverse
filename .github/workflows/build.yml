@@ -155,3 +155,22 @@ jobs:
                          "$env:USERPROFILE\buddyverse\bin\start-hermes.ps1", "$env:USERPROFILE\buddyverse\brain\index.md") {
             "$(Test-Path $f)  $f"
           }
+
+      - name: Diagnostics (on failure)
+        if: failure()
+        run: |
+          $logs = "$env:LOCALAPPDATA\hermes\logs"
+          foreach ($n in 'gateway.log', 'gateway-stdio.log', 'gateway-exit-diag.log', 'errors.log') {
+            "===== $n"; Get-Content "$logs\$n" -Tail 60 -ErrorAction SilentlyContinue
+          }
+          '===== processes'
+          Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'hermes|gateway' } | ForEach-Object { "$($_.ProcessId) $($_.CommandLine)" }
+          '===== status'
+          try { (Invoke-WebRequest 'http://127.0.0.1:9120/api/status' -UseBasicParsing -TimeoutSec 10).StatusCode } catch { "no answer: $($_.Exception.Message)" }
+          '===== hermes gateway run (foreground, 90 s)'
+          $out = Join-Path $env:RUNNER_TEMP 'gw.out'
+          $p = Start-Process -FilePath "$env:LOCALAPPDATA\hermes\bin\hermes.exe" -ArgumentList 'gateway', 'run' `
+            -RedirectStandardOutput $out -RedirectStandardError "$out.err" -PassThru -NoNewWindow
+          $null = $p.WaitForExit(90000)
+          if (-not $p.HasExited) { 'still running after 90 s'; $p.Kill() } else { "exited with $($p.ExitCode)" }
+          Get-Content $out, "$out.err" -Tail 80 -ErrorAction SilentlyContinue
