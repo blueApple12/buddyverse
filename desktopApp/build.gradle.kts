@@ -31,6 +31,9 @@ compose.desktop {
             vendor = "Buddyverse"
             modules("java.naming", "jdk.crypto.ec", "jdk.unsupported", "java.management")
             windows {
+                // The installer's build number (MSI major.minor.build). jpackage's MSI replaces only OLDER versions, so a
+                // rebuilt installer for the same app release (0.1.0 Beta) needs the next build here to install over it.
+                exePackageVersion = "0.1.1"
                 perUserInstall = true
                 menu = true
                 menuGroup = "Buddyverse"
