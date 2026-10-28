@@ -27,7 +27,7 @@ jobs:
           cache: gradle
 
       # windows-latest ships the Android SDK (ANDROID_HOME) with cmdline-tools; add the platform and build tools this
-      # project compiles against (compileSdk 37).
+      # project compiles against (compileSdk 37 = package platforms;android-37.0).
       - name: Set up Android SDK
         run: |
           $sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { $env:ANDROID_SDK_ROOT }
@@ -35,8 +35,8 @@ jobs:
           $sdkmanager = Get-ChildItem "$sdk\cmdline-tools" -Recurse -Filter sdkmanager.bat | Select-Object -First 1
           if (-not $sdkmanager) { throw 'sdkmanager not found' }
           "y`n" * 30 | & $sdkmanager.FullName --licenses | Out-Null
-          & $sdkmanager.FullName 'platform-tools' 'platforms;android-37' 'build-tools;37.0.0' | Out-Null
-          if (-not (Test-Path "$sdk\platforms\android-37")) { throw 'platforms;android-37 did not install' }
+          & $sdkmanager.FullName 'platform-tools' 'platforms;android-37.0' 'build-tools;37.0.0' | Out-Null
+          if (-not (Test-Path "$sdk\platforms\android-37.0")) { throw 'platforms;android-37.0 did not install' }
           "sdk.dir=$($sdk -replace '\\','/')" | Set-Content -Path local.properties -Encoding ascii
 
       # Optional: sign the APK with your own key. Add two repository secrets: BUDDYVERSE_KEYSTORE_B64 (the .jks file,
