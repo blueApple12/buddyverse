@@ -67,7 +67,9 @@ done, so a retry (or opening the app again later) carries on where it stopped.
    - **Hermes Agent**, the AI engine, with its official installer. The beta installs the newest Hermes **canary**
      build (Hermes' daily preview, from 26 Oct 2026 on), because only canary builds have the Webapp that Buddyverse
      signs in to. If you already have Hermes, Setup reuses it, but it must be a canary build from 26 Oct 2026 or
-     newer (see [FAQ](#faq-and-troubleshooting));
+     newer (see [FAQ](#faq-and-troubleshooting)). To keep the install quick it leaves out two optional Hermes extras
+     Buddyverse doesn't need: the web browser bots can drive (Chromium, about 150 MB) and the desktop-control driver.
+     Add them later with `hermes pm install chromium` and `hermes pm install cua-driver`;
    - **cloudflared**, the program that opens the private link your phone uses;
    - an **empty brain**: a notes vault for your bots in `%USERPROFILE%\buddyverse\brain`;
    - **your login** (saved as a hash in Hermes' settings);

@@ -95,7 +95,8 @@ object Setup {
         data object WaitingForUser : Status
         data class Failed(val detail: String) : Status
     }
-    data class State(val step: Step = Step.Account, val status: Status = Status.WaitingForUser, val log: List<String> = emptyList())
+    /** [detail]: what the current step is doing right now (the Hermes install's phases), shown under the step. */
+    data class State(val step: Step = Step.Account, val status: Status = Status.WaitingForUser, val log: List<String> = emptyList(), val detail: String? = null)
     val state = MutableStateFlow(State())
 
     /** The login being set up: [isNew] = create it; else it's the login this PC's Hermes already has. */
@@ -108,7 +109,7 @@ object Setup {
     /** Extra log sink (headless: stdout + setup.log). */
     @Volatile var echo: ((String) -> Unit)? = null
 
-    private fun log(line: String) {
+    @Synchronized private fun log(line: String) {
         state.value = state.value.copy(log = (state.value.log + line).takeLast(14))
         echo?.invoke(line)
     }
@@ -124,14 +125,29 @@ object Setup {
 
     fun setAccount(a: Account) { account = a }
 
+    /** The phone link's download, started beside the Hermes install (they don't depend on each other). */
+    @Volatile private var cloudflaredJob: java.util.concurrent.CompletableFuture<String?>? = null
+
+    private fun fetchCloudflared(): String? {
+        log("cloudflared-windows-amd64.exe ← github.com/cloudflare/cloudflared")
+        download(CLOUDFLARED, p.cloudflared)
+        return if (p.cloudflared.length() < 1_000_000) { p.cloudflared.delete(); "cloudflared download is too small" } else null
+    }
+
     /** Runs the automatic steps from [from] (default: right after the account form) up to the Start step. */
     suspend fun runFrom(from: Step = Step.Hermes): Boolean = withContext(Dispatchers.IO) {
         val auto = listOf(Step.Hermes, Step.Cloudflared, Step.Files, Step.Login, Step.Plugin)
-        for (s in auto.dropWhile { it != from }) {
-            state.value = state.value.copy(step = s, status = Status.Running)
+        val steps = auto.dropWhile { it != from }
+        if (Step.Cloudflared in steps && !skipPhone && !p.cloudflared.isFile && cloudflaredJob == null)
+            cloudflaredJob = java.util.concurrent.CompletableFuture.supplyAsync { runCatching { fetchCloudflared() }.getOrElse { it.message ?: it.toString() } }
+        for (s in steps) {
+            state.value = state.value.copy(step = s, status = Status.Running, detail = null)
+            val t0 = System.nanoTime()
             val err = runCatching { run(s) }.fold({ it }, { it.message ?: it.toString() })
             if (err != null) { state.value = state.value.copy(status = Status.Failed(err)); log("failed: $err"); return@withContext false }
+            log("step ${s.name}: done in ${(System.nanoTime() - t0) / 1_000_000_000}s")
         }
+        state.value = state.value.copy(detail = null)
         true
     }
 
@@ -192,10 +208,11 @@ object Setup {
             }
             else -> null
         }
-        Step.Cloudflared -> if (skipPhone || p.cloudflared.isFile) null else {
-            log("cloudflared-windows-amd64.exe ← github.com/cloudflare/cloudflared")
-            download(CLOUDFLARED, p.cloudflared)
-            if (p.cloudflared.length() < 1_000_000) { p.cloudflared.delete(); "cloudflared download is too small" } else null
+        Step.Cloudflared -> if (skipPhone) null else {
+            // Usually already downloaded beside the Hermes install; a failed or missing one is fetched again here.
+            val early = cloudflaredJob?.let { runCatching { it.get() }.getOrElse { e -> e.message } }
+            cloudflaredJob = null
+            if (early == null && p.cloudflared.isFile) null else fetchCloudflared()
         }
         Step.Files -> {
             p.bin.mkdirs()
@@ -230,7 +247,7 @@ object Setup {
             download(HERMES_INSTALLER, tmp)
             val pb = ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", tmp.path,
                 "-NonInteractive", "-HermesHome", p.hermesHome.path, "-InstallDir", File(p.hermesHome, "hermes-agent").path,
-                "-Commit", canary.commit)
+                "-Commit", canary.commit, *skipArgs())
                 .redirectErrorStream(true).redirectOutput(out)
             p.childEnv(pb.environment())
             pb.environment()["HERMES_NONINTERACTIVE"] = "1"
@@ -247,10 +264,22 @@ object Setup {
         } finally { tmp.delete(); out.delete() }
     }
 
+    /**
+     * Buddyverse needs Hermes' gateway, not its web browser (Chromium, ~150 MB) or the desktop-control driver: skip both
+     * (Hermes remembers it; `hermes pm install chromium` / `hermes pm install cua-driver` add them later).
+     * `BUDDYVERSE_HERMES_FULL=1` installs everything.
+     */
+    private fun skipArgs(): Array<String> =
+        if (System.getenv("BUDDYVERSE_HERMES_FULL") == "1") emptyArray() else arrayOf("-SkipBrowser", "-SkipComputerUse")
+
     /** Streams new installer output lines into the visible log; returns the number of lines shown so far. */
     private fun tail(f: File, shown: Int): Int {
         val lines = runCatching { f.readLines() }.getOrDefault(emptyList()).map { it.replace(Regex("\u001B\\[[0-9;]*[A-Za-z]"), "").trimEnd() }
-        lines.drop(shown).filter { it.isNotBlank() }.forEach { log(it.take(160)) }
+        lines.drop(shown).filter { it.isNotBlank() }.forEach { l ->
+            HermesPhase.of(l)?.let { ph -> if (state.value.detail != ph) { state.value = state.value.copy(detail = ph); log("== $ph") } }
+            // Download percentages and build debug lines would flood the headless log.
+            if (!l.contains("% ") && !l.trimStart().startsWith("DEBUG")) log(l.take(160))
+        }
         return lines.size
     }
 
@@ -346,9 +375,12 @@ object HeadlessSetup {
         val p = InstallPaths.current
         p.root.mkdirs()
         val logFile = p.setupLog
+        val t0 = System.nanoTime()
         fun say(raw: String) {
-            // Plain ASCII: a redirected Windows console/log file may not be UTF-8.
-            val line = raw.replace("←", "<-").replace("→", "->").replace("·", "|").replace("…", "...")
+            // Plain ASCII: a redirected Windows console/log file may not be UTF-8. Each line starts with the elapsed mm:ss.
+            val sec = (System.nanoTime() - t0) / 1_000_000_000
+            val line = "[%02d:%02d] ".format(sec / 60, sec % 60) +
+                raw.replace("←", "<-").replace("→", "->").replace("·", "|").replace("…", "...")
             println(line)
             runCatching { logFile.appendText(line + System.lineSeparator()) }
         }
@@ -377,7 +409,12 @@ object HeadlessSetup {
         }
         Setup.skipPhone = a.skipPhone
         Setup.echo = { say("  $it") }
-        val ok = kotlinx.coroutines.runBlocking { Setup.runFrom() && Setup.start(null) }
+        val ok = kotlinx.coroutines.runBlocking {
+            Setup.runFrom() && run {
+                val s0 = System.nanoTime()
+                Setup.start(null).also { if (it) say("  step Start: done in ${(System.nanoTime() - s0) / 1_000_000_000}s") }
+            }
+        }
         if (!ok) {
             val st = Setup.state.value
             say("FAILED at step ${st.step}: ${(st.status as? Setup.Status.Failed)?.detail}")
@@ -540,6 +577,9 @@ fun SetupOverlay(store: AppStore, onDone: (connectModel: Boolean) -> Unit) {
                         Spacer(Modifier.width(10.dp))
                         Txt(t.steps.getValue(s), if (now) Theme.type.headline else Theme.type.callout, if (done || now) c.text else c.secondary)
                     }
+                    val detail = st.detail
+                    if (now && !failed && detail != null && st.status is Setup.Status.Running)
+                        Txt(HermesPhase.label(detail, t === setupHe), Theme.type.callout, c.secondary, Modifier.padding(start = 34.dp))
                 }
                 Spacer(Modifier.height(16.dp))
                 when (val status = st.status) {
@@ -669,5 +709,32 @@ private fun SetupQr(text: String, modifier: Modifier) {
         val cell = kotlin.math.floor(size.minDimension / m.width)
         val o = (size.minDimension - cell * m.width) / 2
         for (y in 0 until m.height) for (x in 0 until m.width) if (m[x, y]) drawRect(Color.Black, Offset(o + x * cell, o + y * cell), Size(cell, cell))
+    }
+}
+
+/** The Hermes installer's phases, read from its own progress lines, as short words for the Setup screen. */
+object HermesPhase {
+    const val TOOLS = "Getting the installer's tools (git)"
+    const val SOURCE = "Downloading Hermes (canary)"
+    const val PACKAGES = "Installing Hermes' packages (Python, Node, ffmpeg)"
+    const val BUILD = "Building Hermes' apps (the longest part)"
+    const val FINISH = "Finishing the Hermes install"
+
+    fun of(line: String): String? = when {
+        line.contains("-> installing git") -> TOOLS
+        line.contains("-> Cloning ") -> SOURCE
+        line.contains("-> Installing dependencies") || line.contains("-> downloading uv") -> PACKAGES
+        line.contains("-> Building the hermes command") -> BUILD
+        line.contains("-> Publishing the hermes command") -> FINISH
+        else -> null
+    }
+
+    fun label(phase: String, hebrew: Boolean): String = if (!hebrew) phase else when (phase) {
+        TOOLS -> "מורידים את כלי ההתקנה (git)"
+        SOURCE -> "מורידים את Hermes (canary)"
+        PACKAGES -> "מתקינים את החבילות של Hermes (Python, Node, ffmpeg)"
+        BUILD -> "בונים את האפליקציות של Hermes (החלק הארוך)"
+        FINISH -> "מסיימים את התקנת Hermes"
+        else -> phase
     }
 }

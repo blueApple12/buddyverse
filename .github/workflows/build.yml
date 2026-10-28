@@ -83,10 +83,18 @@ jobs:
 
   # The "clean machine" test: a fresh runner installs the built exe per-user, runs the headless first-run setup
   # (which installs Hermes with its official installer and creates the login) and signs in to the local gateway.
+  # `lean` is what users get (no Chromium, no computer-use driver); `full` (BUDDYVERSE_HERMES_FULL=1) installs every
+  # Hermes default package, as a timing baseline. Both must pass.
   clean-install:
     needs: build
     runs-on: windows-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        hermes: [lean, full]
+    env:
+      BUDDYVERSE_HERMES_FULL: ${{ matrix.hermes == 'full' && '1' || '' }}
     defaults:
       run:
         shell: pwsh
@@ -127,6 +135,8 @@ jobs:
           $null = $p.Handle   # keeps the exit code
           if (-not $p.WaitForExit(2400000)) { $p.Kill(); Get-Content $log, "$log.err" -ErrorAction SilentlyContinue; throw 'setup took longer than 40 minutes' }
           Get-Content $log, "$log.err" -ErrorAction SilentlyContinue
+          '===== timings (${{ matrix.hermes }})'
+          Get-Content $log | Select-String -Pattern 'step \w+: done in|== ' | ForEach-Object { $_.Line }
           Remove-Item $pw
           if ($p.ExitCode -ne 0) { throw "setup exited with $($p.ExitCode)" }
 

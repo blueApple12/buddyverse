@@ -22,7 +22,8 @@ SAFETY RULES (follow all of them, always):
    Buddyverse's own setup then downloads Hermes Agent (https://hermes-agent.nousresearch.com/install.ps1) and
    cloudflared (github.com/cloudflare/cloudflared releases). Nothing else unless I agree.
    This beta installs Hermes' newest CANARY build (its daily preview: the official installer pinned to the newest
-   v...+canary tag of github.com/NousResearch/hermes-agent), because Hermes' stable release has no Webapp yet.
+   v...+canary tag of github.com/NousResearch/hermes-agent), because Hermes' stable release has no Webapp yet. It skips Hermes' optional
+   Chromium browser and computer-use driver to keep the install fast.
 6. Do not change, stop or delete an existing Hermes install, its profiles, its .env or its config, except through the
    steps below. If Hermes is already installed, tell me; setup reuses it, but only a canary build from 26 Oct 2026 or
    newer works (one with "$env:LOCALAPPDATA\hermes\hermes-agent\gateway\webapp_listener.py"). If it's older, setup
